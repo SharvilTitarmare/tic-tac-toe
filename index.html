@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wolf Tic-Tac-Toe | Unbeatable AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary: #3b0764;
+            --secondary: #7e22ce;
+            --accent: #e879f9;
+            --dark: #1e1b4b;
+            --light: #f5f3ff;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%);
+            min-height: 100vh;
+            color: var(--light);
+        }
+        
+        .wolf-logo {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            filter: drop-shadow(0 0 10px rgba(232, 121, 249, 0.7));
+            transition: all 0.3s ease;
+        }
+        
+        .wolf-logo:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 0 15px rgba(232, 121, 249, 0.9));
+        }
+        
+        .game-board {
+            background: rgba(30, 27, 75, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--accent);
+            overflow: hidden;
+        }
+        
+        .cell {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cell:hover {
+            background: rgba(126, 34, 206, 0.2);
+        }
+        
+        .cell.x::before, .cell.x::after {
+            content: '';
+            position: absolute;
+            width: 80%;
+            height: 8px;
+            background-color: #f472b6;
+            border-radius: 4px;
+        }
+        
+        .cell.x::before {
+            transform: rotate(45deg);
+        }
+        
+        .cell.x::after {
+            transform: rotate(-45deg);
+        }
+        
+        .cell.o::before {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 60%;
+            border: 8px solid #60a5fa;
+            border-radius: 50%;
+        }
+        
+        .border-r-custom {
+            border-right: 2px solid var(--accent);
+        }
+        
+        .border-b-custom {
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(126, 34, 206, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(126, 34, 206, 0.6);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .glow-text {
+            text-shadow: 0 0 10px rgba(232, 121, 249, 0.7);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(232, 121, 249, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(232, 121, 249, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(232, 121, 249, 0);
+            }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .difficulty-btn {
+            background: rgba(126, 34, 206, 0.3);
+            border: 1px solid var(--accent);
+            color: white;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .difficulty-btn:hover, .difficulty-btn.active {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .ai-thinking {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 27, 75, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            font-size: 1.5rem;
+            backdrop-filter: blur(5px);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4">
+    <div class="flex items-center mb-6">
+        <svg class="wolf-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path fill="#E879F9" d="M224 32c0-17.7 14.3-32 32-32h32c17.7 0 32 14.3 32 32V44c0 92.8-75.2 168-168 168H136c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32h32c92.8 0 168-75.2 168-168V32zM136 288h32c92.8 0 168-75.2 168-168v-4c0-17.7 14.3-32 32-32h32c17.7 0 32 14.3 32 32V44c0 92.8-75.2 168-168 168H136c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32zM64 224c0-17.7 14.3-32 32-32h32c92.8 0 168-75.2 168-168v-4c0-17.7 14.3-32 32-32h32c17.7 0 32 14.3 32 32V44c0 92.8-75.2 168-168 168H136c-17.7 0-32 14.3-32 32v32c0 17.7 14.3 32 32 32h32c92.8 0 168-75.2 168-168V32z"/>
+        </svg>
+        <h1 class="text-4xl font-bold ml-4 glow-text">Wolf Tic-Tac-Toe</h1>
+    </div>
+    
+    <div class="flex flex-col items-center mb-8">
+        <div class="flex space-x-4 mb-6">
+            <button id="newGameBtn" class="btn-primary pulse">
+                <i class="fas fa-play mr-2"></i> New Game
+            </button>
+            <button id="difficultyBtn" class="btn-primary">
+                <i class="fas fa-cog mr-2"></i> Difficulty
+            </button>
+        </div>
+        
+        <div class="flex items-center justify-between w-full max-w-md mb-6">
+            <div class="text-center bg-purple-900 bg-opacity-50 p-4 rounded-lg border border-purple-400 w-32">
+                <div class="text-lg font-semibold">Player (X)</div>
+                <div id="playerScore" class="text-2xl font-bold text-pink-400">0</div>
+            </div>
+            
+            <div class="text-center mx-4">
+                <div class="text-xl font-bold">VS</div>
+            </div>
+            
+            <div class="text-center bg-purple-900 bg-opacity-50 p-4 rounded-lg border border-purple-400 w-32">
+                <div class="text-lg font-semibold">Wolf AI (O)</div>
+                <div id="aiScore" class="text-2xl font-bold text-blue-400">0</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="game-board relative">
+        <div id="aiThinking" class="ai-thinking hidden">
+            <div class="spinner"></div>
+            <span>Wolf AI is thinking...</span>
+        </div>
+        
+        <div class="grid grid-cols-3 grid-rows-3">
+            <!-- Row 1 -->
+            <div class="cell border-r-custom border-b-custom" data-index="0"></div>
+            <div class="cell border-r-custom border-b-custom" data-index="1"></div>
+            <div class="cell border-b-custom" data-index="2"></div>
+            
+            <!-- Row 2 -->
+            <div class="cell border-r-custom border-b-custom" data-index="3"></div>
+            <div class="cell border-r-custom border-b-custom" data-index="4"></div>
+            <div class="cell border-b-custom" data-index="5"></div>
+            
+            <!-- Row 3 -->
+            <div class="cell border-r-custom" data-index="6"></div>
+            <div class="cell border-r-custom" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+    </div>
+    
+    <div id="statusMessage" class="mt-6 text-xl font-semibold text-center min-h-8">
+        Your turn! Make your move.
+    </div>
+    
+    <!-- Difficulty Modal -->
+    <div id="difficultyModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Select Difficulty</h2>
+            <div class="flex justify-center mb-6">
+                <button class="difficulty-btn active" data-difficulty="easy">
+                    <i class="fas fa-paw mr-2"></i> Easy
+                </button>
+                <button class="difficulty-btn" data-difficulty="medium">
+                    <i class="fas fa-wolf mr-2"></i> Medium
+                </button>
+                <button class="difficulty-btn" data-difficulty="hard">
+                    <i class="fas fa-crown mr-2"></i> Unbeatable
+                </button>
+            </div>
+            <button id="closeDifficultyBtn" class="btn-primary">
+                <i class="fas fa-check mr-2"></i> Confirm
+            </button>
+        </div>
+    </div>
+    
+    <!-- Game Over Modal -->
+    <div id="gameOverModal" class="modal">
+        <div class="modal-content">
+            <h2 id="gameOverTitle" class="text-3xl font-bold mb-4"></h2>
+            <p id="gameOverMessage" class="text-xl mb-6"></p>
+            <div class="flex justify-center space-x-4">
+                <button id="playAgainBtn" class="btn-primary">
+                    <i class="fas fa-redo mr-2"></i> Play Again
+                </button>
+                <button id="newGameModalBtn" class="btn-primary">
+                    <i class="fas fa-play mr-2"></i> New Game
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game state
+            let board = ['', '', '', '', '', '', '', '', ''];
+            let currentPlayer = 'X'; // Player is X, AI is O
+            let gameActive = false;
+            let playerScore = 0;
+            let aiScore = 0;
+            let difficulty = 'hard'; // Default to unbeatable
+            
+            // DOM elements
+            const cells = document.querySelectorAll('.cell');
+            const statusMessage = document.getElementById('statusMessage');
+            const playerScoreElement = document.getElementById('playerScore');
+            const aiScoreElement = document.getElementById('aiScore');
+            const newGameBtn = document.getElementById('newGameBtn');
+            const difficultyBtn = document.getElementById('difficultyBtn');
+            const difficultyModal = document.getElementById('difficultyModal');
+            const closeDifficultyBtn = document.getElementById('closeDifficultyBtn');
+            const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+            const gameOverModal = document.getElementById('gameOverModal');
+            const gameOverTitle = document.getElementById('gameOverTitle');
+            const gameOverMessage = document.getElementById('gameOverMessage');
+            const playAgainBtn = document.getElementById('playAgainBtn');
+            const newGameModalBtn = document.getElementById('newGameModalBtn');
+            const aiThinking = document.getElementById('aiThinking');
+            
+            // Initialize game
+            initGame();
+            
+            // Event listeners
+            cells.forEach(cell => {
+                cell.addEventListener('click', handleCellClick);
+            });
+            
+            newGameBtn.addEventListener('click', startNewGame);
+            difficultyBtn.addEventListener('click', () => difficultyModal.style.display = 'flex');
+            closeDifficultyBtn.addEventListener('click', () => difficultyModal.style.display = 'none');
+            
+            difficultyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    difficultyButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    difficulty = button.dataset.difficulty;
+                });
+            });
+            
+            playAgainBtn.addEventListener('click', () => {
+                gameOverModal.style.display = 'none';
+                resetBoard();
+            });
+            
+            newGameModalBtn.addEventListener('click', () => {
+                gameOverModal.style.display = 'none';
+                startNewGame();
+            });
+            
+            // Functions
+            function initGame() {
+                board = ['', '', '', '', '', '', '', '', ''];
+                currentPlayer = 'X';
+                gameActive = true;
+                
+                cells.forEach(cell => {
+                    cell.classList.remove('x', 'o');
+                    cell.innerHTML = '';
+                });
+                
+                statusMessage.textContent = "Your turn! Make your move.";
+            }
+            
+            function startNewGame() {
+                playerScore = 0;
+                aiScore = 0;
+                updateScores();
+                initGame();
+            }
+            
+            function handleCellClick(e) {
+                const cellIndex = parseInt(e.target.dataset.index);
+                
+                // Check if cell is empty and game is active
+                if (board[cellIndex] !== '' || !gameActive) return;
+                
+                // Player's move
+                makeMove(cellIndex, 'X');
+                
+                // Check for win or draw
+                if (checkWin(board, 'X')) {
+                    gameOver('player');
+                    return;
+                } else if (isBoardFull()) {
+                    gameOver('draw');
+                    return;
+                }
+                
+                // AI's turn
+                currentPlayer = 'O';
+                statusMessage.textContent = "Wolf AI is thinking...";
+                gameActive = false;
+                
+                // Show AI thinking animation
+                aiThinking.classList.remove('hidden');
+                
+                // Add delay to make it feel more natural
+                setTimeout(() => {
+                    const aiMove = getAIMove();
+                    makeMove(aiMove, 'O');
+                    
+                    // Check for win or draw
+                    if (checkWin(board, 'O')) {
+                        gameOver('ai');
+                    } else if (isBoardFull()) {
+                        gameOver('draw');
+                    } else {
+                        currentPlayer = 'X';
+                        statusMessage.textContent = "Your turn! Make your move.";
+                        gameActive = true;
+                    }
+                    
+                    // Hide AI thinking animation
+                    aiThinking.classList.add('hidden');
+                }, 1000);
+            }
+            
+            function makeMove(index, player) {
+                board[index] = player;
+                const cell = cells[index];
+                
+                if (player === 'X') {
+                    cell.classList.add('x');
+                } else {
+                    cell.classList.add('o');
+                }
+            }
+            
+            function getAIMove() {
+                switch (difficulty) {
+                    case 'easy':
+                        return getRandomMove();
+                    case 'medium':
+                        return Math.random() > 0.5 ? getRandomMove() : getBestMove();
+                    case 'hard':
+                    default:
+                        return getBestMove();
+                }
+            }
+            
+            function getRandomMove() {
+                const emptyCells = board
+                    .map((cell, index) => cell === '' ? index : null)
+                    .filter(val => val !== null);
+                
+                return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            }
+            
+            function getBestMove() {
+                // Minimax algorithm implementation
+                
+                // Check if AI can win in the next move
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'O';
+                        if (checkWin(board, 'O')) {
+                            board[i] = '';
+                            return i;
+                        }
+                        board[i] = '';
+                    }
+                }
+                
+                // Check if player can win in the next move and block them
+                for (let i = 0; i < board.length; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'X';
+                        if (checkWin(board, 'X')) {
+                            board[i] = '';
+                            return i;
+                        }
+                        board[i] = '';
+                    }
+                }
+                
+                // Try to take one of the corners
+                const corners = [0, 2, 6, 8];
+                const availableCorners = corners.filter(index => board[index] === '');
+                if (availableCorners.length > 0) {
+                    return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+                }
+                
+                // Try to take the center
+                if (board[4] === '') {
+                    return 4;
+                }
+                
+                // Take any remaining edge
+                const edges = [1, 3, 5, 7];
+                const availableEdges = edges.filter(index => board[index] === '');
+                if (availableEdges.length > 0) {
+                    return availableEdges[Math.floor(Math.random() * availableEdges.length)];
+                }
+                
+                // Fallback to random move (shouldn't happen as we check for full board earlier)
+                return getRandomMove();
+            }
+            
+            function checkWin(board, player) {
+                // All possible winning combinations
+                const winPatterns = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                    [0, 4, 8], [2, 4, 6]             // diagonals
+                ];
+                
+                return winPatterns.some(pattern => {
+                    return pattern.every(index => board[index] === player);
+                });
+            }
+            
+            function isBoardFull() {
+                return board.every(cell => cell !== '');
+            }
+            
+            function gameOver(winner) {
+                gameActive = false;
+                
+                switch (winner) {
+                    case 'player':
+                        playerScore++;
+                        gameOverTitle.textContent = "You Won!";
+                        gameOverMessage.textContent = "Congratulations! You defeated the Wolf AI!";
+                        break;
+                    case 'ai':
+                        aiScore++;
+                        gameOverTitle.textContent = "Wolf AI Won!";
+                        gameOverMessage.textContent = "The Wolf AI outsmarted you this time!";
+                        break;
+                    case 'draw':
+                        gameOverTitle.textContent = "It's a Draw!";
+                        gameOverMessage.textContent = "The battle ends in a stalemate!";
+                        break;
+                }
+                
+                updateScores();
+                gameOverModal.style.display = 'flex';
+            }
+            
+            function resetBoard() {
+                initGame();
+            }
+            
+            function updateScores() {
+                playerScoreElement.textContent = playerScore;
+                aiScoreElement.textContent = aiScore;
+            }
+        });
+    </script>
+<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - 🧬 <a href="https://enzostvs-deepsite.hf.space?remix=SharvilTitarmare/chat-bot" style="color: #fff;text-decoration: underline;" target="_blank" >Remix</a></p></body>
+</html>

@@ -1,0 +1,4 @@
+CHATBOT WITH RULE-BASED RESPONSES  Build a simple chatbot that responds to user inputs based on predefined rules. Use if-else statements or pattern matching techniques to identify user queries and provide appropriate responses. This will give you a basic understanding of natural language processing and conversation flow. create it in fancy look and it should be look more creative and its logo should be of a wolf . should have realistic look
+it should have wolf logo take image from google wolf logo
+give a logo of a wolf fancy
+TIC-TAC-TOE ΑΙ  Implement an Al agent that plays the classic game of Tic-Tac-Toe against a human player. You can use algorithms like Minimax with or without Alpha-Beta Pruning to make the Al player unbeatable. This project will help you understand game theory and basic search algorithms. create it in fancy way and it should be look creative and should look realistic look
